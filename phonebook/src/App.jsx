@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
+ 
 import Contacts from './components/Contacts'
 import Filter from './components/Filter'
 import ContactForm from './components/ContactForm'
@@ -11,8 +12,8 @@ const App = () => {
   const [searchText, setSearchText] = useState('')
 
   useEffect(() => { 
-    axios.get('http://localhost:3001/persons')
-      .then(response => setPersons(response.data))
+    personService.getAll()
+      .then(initialPersons => setPersons(initialPersons))
   }, [])
 
   const handleNameChange = (event) => { setNewName(event.target.value) }
@@ -30,12 +31,47 @@ const App = () => {
     const personObject = { name: newName, number: newNumber }
     const nameExists = persons.map(person => person.name).includes(newName)
     if(nameExists) {
-      window.alert(`${newName} is already added to phonebook`)
+      window.alert(`${newName} is already added to phonebook, replace the old number with a new one?`)
+      const person = persons.find(person => person.name === newName)
+      const updatedPerson = {...person, number: newNumber}
+      personService.update(updatedPerson.id, updatedPerson)
+        .then(returnedPerson => {
+          const filteredPersons = persons.filter(person => person.id !== returnedPerson.id)
+          setPersons(filteredPersons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
+        .catch(error => {
+          alert(`the person '${person.name}' was already deleted from server`)
+          const filteredPersons = persons.filter(person => person.id !== person.id)
+          setPersons(filteredPersons)
+        })
       return
     }
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
+    personService.create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      }
+      )
+
+  }
+
+  const handleDelete = (id) => {
+    const person = persons.find(person => person.id === id)
+    const confirm = window.confirm(`Delete ${person.name}?`)
+    if(confirm) {
+      personService.remove(id)
+        .then(() => {
+          const filteredPersons = persons.filter(person => person.id !== id)
+          setPersons(filteredPersons)
+        }).catch(error => {
+          alert(`the person '${person.name}' was already deleted from server`)
+          const filteredPersons = persons.filter(person => person.id !== id)
+          setPersons(filteredPersons)
+        })
+    }
   }
 
   return (
@@ -51,7 +87,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Contacts contacts={persons}/>
+      <Contacts contacts={persons} handleDelete={handleDelete}/>
     </div>
   )
 }

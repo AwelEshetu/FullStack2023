@@ -1,8 +1,9 @@
-const Contacts = ({contacts}) => {
+const Contacts = ({contacts, handleDelete}) => {
     return (
         contacts.map((contact) => ( 
-            <div key={contact.name}>
-                <p>{contact.name} {contact.number}</p>
+            <div key={contact.name} >
+                {contact.name} {contact.number}
+                <button onClick={() => handleDelete(contact.id)}>delete</button>
             </div>
         ))  
     )
