@@ -4,13 +4,15 @@ import personService from './services/persons'
 import Contacts from './components/Contacts'
 import Filter from './components/Filter'
 import ContactForm from './components/ContactForm'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchText, setSearchText] = useState('')
-
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [className, setClassName] = useState('error')
   useEffect(() => { 
     personService.getAll()
       .then(initialPersons => setPersons(initialPersons))
@@ -42,7 +44,8 @@ const App = () => {
           setNewNumber('')
         })
         .catch(error => {
-          alert(`the person '${person.name}' was already deleted from server`)
+          setClassName('error')
+          setErrorMessage(`Information of ${person.name} has already been removed from server`)
           const filteredPersons = persons.filter(person => person.id !== person.id)
           setPersons(filteredPersons)
         })
@@ -53,6 +56,8 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
         setNewName('')
         setNewNumber('')
+        setErrorMessage(`Added ${returnedPerson.name}`)
+        setClassName('success')
       }
       )
 
@@ -67,7 +72,8 @@ const App = () => {
           const filteredPersons = persons.filter(person => person.id !== id)
           setPersons(filteredPersons)
         }).catch(error => {
-          alert(`the person '${person.name}' was already deleted from server`)
+          setClassName('error')
+          setErrorMessage(`Information of ${person.name} has already been removed from server`)
           const filteredPersons = persons.filter(person => person.id !== id)
           setPersons(filteredPersons)
         })
@@ -77,6 +83,7 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
+      <Notification message={errorMessage} className={className}/>
       <Filter value={searchText} onChange={handleSearchText}/>
       <h2>Add a new</h2>
       <ContactForm
