@@ -1,0 +1,19 @@
+{
+  "name": "phonebook_backend",
+  "version": "1.0.0",
+  "description": "Phonebook backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "author": "Awel Eshetu",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
